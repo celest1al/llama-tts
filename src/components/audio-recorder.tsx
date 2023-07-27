@@ -4,7 +4,7 @@ import { useWebSocket } from "@/hooks/use-websocket";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-const SST_WEBSOCKET_URL = process.env.NEXT_PUBLIC_SST_WEBSOCKET_URL;
+const STT_WEBSOCKET_URL = process.env.NEXT_PUBLIC_STT_WEBSOCKET_URL;
 
 // this component is used to record audio from the microphone
 // and send it real time to the server using websocket
@@ -15,7 +15,7 @@ export function AudioRecorder() {
   const [permission, setPermission] = useState<PermissionState | undefined>(
     undefined
   );
-  const ws = useWebSocket({ url: `${SST_WEBSOCKET_URL}/ws` });
+  const ws = useWebSocket({ url: `${STT_WEBSOCKET_URL}/ws` });
 
   const getPermission = async () => {
     if ("MediaRecorder" in window) {

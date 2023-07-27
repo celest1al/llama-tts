@@ -19,6 +19,10 @@ export function useWebSocket({ url }: UseWebSocketProps) {
       console.log("WebSocket client disconnected");
     };
 
+    socket.current.onmessage = (event) => {
+      console.log("WebSocket client received a message", event);
+    }
+
     return () => {
       socket.current?.close();
     };
