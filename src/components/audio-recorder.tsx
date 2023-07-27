@@ -4,7 +4,7 @@ import { useWebSocket } from "@/hooks/use-websocket";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-const SOCKET_URL = "wss://tts.getlumina.com/ws";
+const SST_WEBSOCKET_URL = process.env.NEXT_PUBLIC_SST_WEBSOCKET_URL;
 
 // this component is used to record audio from the microphone
 // and send it real time to the server using websocket
@@ -15,7 +15,7 @@ export function AudioRecorder() {
   const [permission, setPermission] = useState<PermissionState | undefined>(
     undefined
   );
-  const ws = useWebSocket({ url: SOCKET_URL });
+  const ws = useWebSocket({ url: `${SST_WEBSOCKET_URL}/ws` });
 
   const getPermission = async () => {
     if ("MediaRecorder" in window) {
@@ -34,7 +34,7 @@ export function AudioRecorder() {
 
   const startRecording = () => {
     if (stream) {
-      const media = new MediaRecorder(stream, { mimeType: "audio/ogg; codecs=opus" });
+      const media = new MediaRecorder(stream, { mimeType: "audio/webm" });
       mediaRecorder.current = media;
       mediaRecorder.current.start();
 
@@ -52,7 +52,7 @@ export function AudioRecorder() {
     if (mediaRecorder.current) {
       mediaRecorder.current?.stop();
       mediaRecorder.current.onstop = () => {
-        const audioBlob = new Blob(audioChunks.current, { type: "audio/ogg; codecs=opus" });
+        const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
         const audioUrl = URL.createObjectURL(audioBlob);
 
         const audio = new Audio(audioUrl);

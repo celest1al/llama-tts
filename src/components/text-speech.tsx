@@ -10,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { browserCheck } from "@/lib/browser-check";
 import { getDefaultVoice } from "@/lib/default-voice";
+import { Slider } from "./ui/slider";
 
 type LlamaParams = {
   message: string;
@@ -19,35 +19,34 @@ type LlamaParams = {
   cb: (message: string) => void;
 };
 
+const LLAMA_BASE_URL = process.env.NEXT_PUBLIC_LLAMA_BASE_URL;
+
 const fetchLlamaData = async ({ message, signal, cb }: LlamaParams) => {
   try {
-    const response = await fetch(
-      "https://llm.getlumina.com/v1/chat/completions",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          messages: [
-            {
-              content: "You are a helpful assistant.",
-              role: "system",
-            },
-            {
-              content: message,
-              role: "user",
-            },
-          ],
-        }),
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-          "content-type": "application/json",
-        },
-        mode: "cors",
-        redirect: "follow",
-        referrer: "no-referrer",
-        signal: signal,
-      }
-    );
+    const response = await fetch(`${LLAMA_BASE_URL}/v1/chat/completions`, {
+      method: "POST",
+      body: JSON.stringify({
+        messages: [
+          {
+            content: "You are a helpful assistant.",
+            role: "system",
+          },
+          {
+            content: message,
+            role: "user",
+          },
+        ],
+      }),
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "content-type": "application/json",
+      },
+      mode: "cors",
+      redirect: "follow",
+      referrer: "no-referrer",
+      signal: signal,
+    });
 
     const data = await response.json();
 
@@ -66,6 +65,9 @@ export function TextSpeech() {
     undefined
   );
   const [isRendered, setIsRendered] = useState(false);
+  const [volume, setVolume] = useState([1]);
+  const [pitch, setPitch] = useState([1]);
+  const [rate, setRate] = useState([1]);
 
   const handleSubmit = async () => {
     return await fetchLlamaData({
@@ -86,13 +88,13 @@ export function TextSpeech() {
 
       utterance.lang = "en-US";
       utterance.voice = voice ?? defaultVoice;
-      utterance.rate = 1;
-      utterance.pitch = 1;
-      utterance.volume = 1;
+      utterance.rate = rate[0];
+      utterance.pitch = pitch[0];
+      utterance.volume = volume[0];
 
       speechSynthesis.speak(utterance);
     },
-    [voice]
+    [pitch, rate, voice, volume]
   );
 
   const onHandleVoiceChange = (val: string) => {
@@ -127,7 +129,7 @@ export function TextSpeech() {
 
   return (
     <div className="flex flex-col items-center gap-3 sm:w-[480px] pt-10">
-      <form className="flex items-center gap-2">
+      <form className="flex gap-5">
         <Select onValueChange={(val) => onHandleVoiceChange(val)}>
           <SelectTrigger className="w-[300px]">
             <SelectValue placeholder="Select a voice" />
@@ -141,6 +143,48 @@ export function TextSpeech() {
               ))}
           </SelectContent>
         </Select>
+        <div className="flex flex-col gap-2 w-[80px]">
+          <label htmlFor="volume" className="text-xs">
+            Volume
+          </label>
+          <Slider
+            className="w-full"
+            id="volume"
+            min={0}
+            max={1}
+            step={0.1}
+            value={volume}
+            onValueChange={(val) => setVolume(val)}
+          />
+        </div>
+        <div className="flex flex-col gap-2 w-[80px]">
+          <label htmlFor="pitch" className="text-xs">
+            Pitch
+          </label>
+          <Slider
+            className="w-full"
+            id="pitch"
+            min={0}
+            max={2}
+            step={0.1}
+            value={pitch}
+            onValueChange={(val) => setPitch(val)}
+          />
+        </div>
+        <div className="flex flex-col gap-2 w-[80px]">
+          <label htmlFor="rate" className="text-xs">
+            Speed
+          </label>
+          <Slider
+            className="w-full"
+            id="rate"
+            min={0.1}
+            max={10}
+            step={0.1}
+            value={rate}
+            onValueChange={(val) => setRate(val)}
+          />
+        </div>
       </form>
       <Textarea value={text} onChange={(e) => setText(e.target.value)} />
       <Button onClick={handleSubmit}>Submit</Button>
