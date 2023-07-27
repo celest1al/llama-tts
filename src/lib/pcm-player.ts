@@ -32,7 +32,7 @@ export class PCMPlayer {
       this.interval = setInterval(this.flush, this.option.flushingTime);
       this.maxValue = this.getMaxValue();
       this.typedArray = this.getTypedArray();
-      this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.audioCtx = new ((window as any).AudioContext || (window as any).webkitAudioContext)();
 
       // context needs to be resumed on iOS and Safari (or it will stay in "suspended" state)
       this.audioCtx.resume();

@@ -24,15 +24,6 @@ type LlamaParams = {
 const LLAMA_BASE_URL = process.env.NEXT_PUBLIC_LLAMA_BASE_URL;
 const TTS_WEBSOCKET_URL = process.env.NEXT_PUBLIC_TTS_WEBSOCKET_URL;
 
-const playerOptions: PCMPlayerOption = {
-  encoding: '16bitInt',
-  channels: 1,
-  sampleRate: 22050,
-  flushingTime: 100
-}
-
-const player = new PCMPlayer(playerOptions)
-
 const fetchLlamaData = async ({ message, signal, cb }: LlamaParams) => {
   try {
     const response = await fetch(`${LLAMA_BASE_URL}/v1/chat/completions`, {
@@ -81,6 +72,7 @@ export function TextSpeech() {
   // const [pitch, setPitch] = useState([1]);
   // const [rate, setRate] = useState([1]);
   const ttsWebSocket = useRef<WebSocket | null>(null);
+  const player = useRef<PCMPlayer | null>(null);
 
   const handleSubmit = async () => {
     return await fetchLlamaData({
@@ -135,12 +127,23 @@ export function TextSpeech() {
     ttsWebSocket.current.onmessage = (event) => {
       console.log("WebSocket client received a message", event);
       let data = new Uint8Array(event.data);
-      player.feed(data)
+      player?.current?.feed(data)
     }
 
     return () => {
       ttsWebSocket.current?.close();
     };
+  }, [])
+
+  useEffect(() => {
+    const playerOptions: PCMPlayerOption = {
+      encoding: '16bitInt',
+      channels: 1,
+      sampleRate: 22050,
+      flushingTime: 100
+    }
+    
+    player.current = new PCMPlayer(playerOptions)
   }, [])
 
   useEffect(() => {
